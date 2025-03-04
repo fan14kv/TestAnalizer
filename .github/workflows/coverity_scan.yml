@@ -35,7 +35,7 @@ jobs:
       - name: Upload Scan Results
         run: |
           curl --form token=${{ secrets.COVERITY_TOKEN }} \
-               --form email=your-email@example.com \
+               --form email=your-felixanvwork@gmail.com \
                --form file=@MyTestAnalyzer1.tgz \
                --form version="1.0" \
                --form description="Automated Coverity Scan from GitHub Actions" \
