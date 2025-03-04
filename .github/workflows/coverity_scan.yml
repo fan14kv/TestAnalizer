@@ -19,7 +19,7 @@ jobs:
       - name: Download Coverity Tools
         run: |
           wget https://scan.coverity.com/download/linux64 \
-            --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=MyTestAnalyzer1" -O coverity_tool.tgz
+            --post-data "token=8jFSFWivFSIlWhx63uZgDA&project=MyTestAnalyzer1" -O coverity_tool.tgz
           tar -xvzf coverity_tool.tgz
           mv cov-analysis-linux64-* coverity
           echo "$(pwd)/coverity/bin" >> $GITHUB_PATH
@@ -34,8 +34,8 @@ jobs:
 
       - name: Upload Scan Results
         run: |
-          curl --form token=${{ secrets.COVERITY_TOKEN }} \
-               --form email=your-felixanvwork@gmail.com \
+          curl --form token=8jFSFWivFSIlWhx63uZgDA \
+               --form email=felixanvwork@gmail.com \
                --form file=@MyTestAnalyzer1.tgz \
                --form version="1.0" \
                --form description="Automated Coverity Scan from GitHub Actions" \
