@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "1IbN7Tfu7WFIysW7oaoz9NP0Bl8LQBPD+xKF47KlWGI=",
+  "Source": "TestAnalyzer",
+  "BasePath": "_content/TestAnalyzer",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
