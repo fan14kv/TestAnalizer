@@ -1,0 +1,42 @@
+name: Coverity Scan
+
+on:
+  push:
+    branches:
+      - main  # Change this to your target branch if needed
+
+jobs:
+  coverity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies (if needed)
+        run: sudo apt-get install -y build-essential
+
+      - name: Download Coverity Tools
+        run: |
+          wget https://scan.coverity.com/download/linux64 \
+            --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=MyTestAnalyzer" -O coverity_tool.tgz
+          tar -xvzf coverity_tool.tgz
+          mv cov-analysis-linux64-* coverity
+          echo "$(pwd)/coverity/bin" >> $GITHUB_PATH
+
+      - name: Build and Analyze (for .NET projects)
+        run: |
+          export PATH=$PWD/coverity/bin:$PATH
+          cov-build --dir cov-int dotnet build
+
+      - name: Package Scan Results
+        run: tar czvf MyTestAnalyzer.tgz cov-int
+
+      - name: Upload Scan Results
+        run: |
+          curl --form token=${{ secrets.COVERITY_TOKEN }} \
+               --form email=your-email@example.com \
+               --form file=@MyTestAnalyzer.tgz \
+               --form version="1.0" \
+               --form description="Automated Coverity Scan from GitHub Actions" \
+               https://scan.coverity.com/builds
