@@ -1,4 +1,3 @@
-﻿#pragma warning disable SA1600, SA1101, SA1309,SA1200, SA1210, SA1208 // ElementsMustBeDocumented
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
