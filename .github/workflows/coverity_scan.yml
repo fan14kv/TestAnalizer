@@ -3,50 +3,37 @@ name: Coverity Scan
 on:
   push:
     branches:
-      - main  # Change this to your target branch if needed
+      - main  # Change if needed
 
 jobs:
-  coverity:
+  coverity_scan:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Dependencies (if needed)
-        run: sudo apt-get install -y build-essential
-
-      - name: Download Coverity Tools
+      - name: Download Coverity Build Tool
         run: |
           wget https://scan.coverity.com/download/linux64 \
-            --post-data "token=8jFSFWivFSIlWhx63uZgDA&project=MyTestAnalyzer1" -O coverity_tool.tgz
-          tar -xvzf coverity_tool.tgz
-          mv cov-analysis-linux64-* coverity
-          echo "$(pwd)/coverity/bin" >> $GITHUB_PATH
+          --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=MyTestAnalyzer1" \
+          -O coverity_tool.tgz
 
-      - name: Build and Analyze (for .NET projects)
+      - name: Extract Coverity Tool
+        run: tar -xvzf coverity_tool.tgz
+
+      - name: Build with Coverity
         run: |
-          export PATH=$PWD/coverity/bin:$PATH
-          chmod +x coverity/bin/*
-          cov-build --dir cov-int dotnet build
+          ./cov-analysis-linux64/bin/cov-build --dir cov-int make
 
-      - name: Package Scan Results
-        run: tar czvf MyTestAnalyzer1.tgz cov-int
+      - name: Package the results
+        run: tar czvf cov-int.tar.gz cov-int
 
-      - name: Debug:Check Files
-        run: ls -lah
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverity-scan-results
-          path: MyTestAnalyzer1.tgz
-
-      - name: Upload Scan Results
+      - name: Upload to Coverity Scan
         run: |
-          curl --form token=8jFSFWivFSIlWhx63uZgDA \
-               --form email=felixanvwork@gmail.com \
-               --form file=@MyTestAnalyzer1.tgz \
+          curl --form token=${{ secrets.COVERITY_TOKEN }} \
+               --form email=${{ secrets.COVERITY_EMAIL }} \
+               --form file=@cov-int.tar.gz \
                --form version="1.0" \
-               --form description="Automated Coverity Scan from GitHub Actions" \
-               https://scan.coverity.com/builds
+               --form description="Automated scan" \
+               https://scan.coverity.com/builds?project=MyTestAnalyzer1
