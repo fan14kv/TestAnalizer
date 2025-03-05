@@ -27,13 +27,17 @@ jobs:
       - name: Build and Analyze (for .NET projects)
         run: |
           export PATH=$PWD/coverity/bin:$PATH
+          chmod +x coverity/bin/*
           cov-build --dir cov-int dotnet build
 
       - name: Package Scan Results
         run: tar czvf MyTestAnalyzer1.tgz cov-int
 
+      - name: Debug:Check Files
+        run: ls -lah
+
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverity-scan-results
           path: MyTestAnalyzer1.tgz
