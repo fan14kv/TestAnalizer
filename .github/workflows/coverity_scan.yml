@@ -20,11 +20,17 @@ jobs:
           -O coverity_tool.tgz
 
       - name: Extract Coverity Tool
-        run: tar -xvzf coverity_tool.tgz
+        run: |
+          mkdir coverity_tool
+          tar -xvzf coverity_tool.tgz -C coverity_tool
+
+      - name: Verify Extraction
+        run: ls -la coverity_tool/bin
 
       - name: Build with Coverity
         run: |
-          ./cov-analysis-linux64/bin/cov-build --dir cov-int make
+          chmod +x coverity_tool/bin/cov-build
+          coverity_tool/bin/cov-build --dir cov-int make
 
       - name: Package the results
         run: tar czvf cov-int.tar.gz cov-int
