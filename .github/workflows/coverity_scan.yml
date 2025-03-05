@@ -15,31 +15,24 @@ jobs:
 
       - name: Download Coverity Build Tool
         run: |
-          wget https://scan.coverity.com/download/linux64 \
+          wget --quiet --output-document=coverity_tool.tgz \
           --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=MyTestAnalyzer1" \
-          -O coverity_tool.tgz
+          https://scan.coverity.com/download/linux64
+
+      - name: Verify Download
+        run: |
+          ls -la
+          file coverity_tool.tgz
 
       - name: Extract Coverity Tool
         run: |
           mkdir coverity_tool
-          tar -xvzf coverity_tool.tgz -C coverity_tool
+          tar -xvzf coverity_tool.tgz -C coverity_tool --strip-components=1
 
-      - name: Verify Extraction
-        run: ls -la coverity_tool/bin
+      - name: List Extracted Files
+        run: ls -la coverity_tool
 
       - name: Build with Coverity
         run: |
           chmod +x coverity_tool/bin/cov-build
           coverity_tool/bin/cov-build --dir cov-int make
-
-      - name: Package the results
-        run: tar czvf cov-int.tar.gz cov-int
-
-      - name: Upload to Coverity Scan
-        run: |
-          curl --form token=${{ secrets.COVERITY_TOKEN }} \
-               --form email=${{ secrets.COVERITY_EMAIL }} \
-               --form file=@cov-int.tar.gz \
-               --form version="1.0" \
-               --form description="Automated scan" \
-               https://scan.coverity.com/builds?project=MyTestAnalyzer1
