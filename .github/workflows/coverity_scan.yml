@@ -32,6 +32,12 @@ jobs:
       - name: Package Scan Results
         run: tar czvf MyTestAnalyzer1.tgz cov-int
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverity-scan-results
+          path: MyTestAnalyzer1.tgz
+
       - name: Upload Scan Results
         run: |
           curl --form token=8jFSFWivFSIlWhx63uZgDA \
