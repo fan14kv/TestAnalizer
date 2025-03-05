@@ -3,36 +3,50 @@ name: Coverity Scan
 on:
   push:
     branches:
-      - main  # Change if needed
+      - main  # Change this to your target branch if needed
 
 jobs:
-  coverity_scan:
+  coverity:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download Coverity Build Tool
+      - name: Install Dependencies
         run: |
-          wget --quiet --output-document=coverity_tool.tgz \
-          --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=MyTestAnalyzer1" \
-          https://scan.coverity.com/download/linux64
+          sudo apt-get update
+          sudo apt-get install -y build-essential dotnet-sdk-8.0 jq
 
-      - name: Verify Download
+      - name: Download Coverity Tools
         run: |
-          ls -la
-          file coverity_tool.tgz
+          wget https://scan.coverity.com/download/linux64 \
+            --post-data "token=8jFSFWivFSIlWhx63uZgDA&project=MyTestAnalyzer1" -O coverity_tool.tgz
+          tar -xvzf coverity_tool.tgz
+          mv cov-analysis-linux64-* coverity
+          chmod +x coverity/bin/cov-build
+          echo "$(pwd)/coverity/bin" >> $GITHUB_PATH
+          ls -la coverity/bin  # Debugging
 
-      - name: Extract Coverity Tool
+      - name: Build and Analyze (for .NET projects)
         run: |
-          mkdir coverity_tool
-          tar -xvzf coverity_tool.tgz -C coverity_tool --strip-components=1
+          export PATH=$PWD/coverity/bin:$PATH
+          cov-build --dir cov-int dotnet build || (echo "⚠️ Build failed!" && exit 1)
 
-      - name: List Extracted Files
-        run: ls -la coverity_tool
-
-      - name: Build with Coverity
+      - name: Package Scan Results
         run: |
-          chmod +x coverity_tool/bin/cov-build
-          coverity_tool/bin/cov-build --dir cov-int make
+          if [ -d "cov-int" ]; then
+            tar czvf MyTestAnalyzer1.tgz cov-int
+          else
+            echo "⚠️ Coverity scan failed: cov-int directory not found!"
+            exit 1
+          fi
+
+      - name: Upload Scan Results
+        run: |
+          curl --form token=8jFSFWivFSIlWhx63uZgDA \
+               --form email=felixanvwork@gmail.com \
+               --form file=@MyTestAnalyzer1.tgz \
+               --form version="1.0" \
+               --form description="Automated Coverity Scan from GitHub Actions" \
+               https://scan.coverity.com/builds
